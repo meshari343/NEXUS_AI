@@ -1,0 +1,6 @@
+setup.py
+nexus_ai/__init__.py
+nexus_ai.egg-info/PKG-INFO
+nexus_ai.egg-info/SOURCES.txt
+nexus_ai.egg-info/dependency_links.txt
+nexus_ai.egg-info/top_level.txt
