@@ -53,24 +53,33 @@ below is a JSON sample input dataset, to use in testing out the API.
 
 ## Usage
 
-if you would like to use the model inside python, instead of making use of the API, do the same setup steps above, other than the last one and then in python, you can use the models like this
+if you would like to use the model inside python, instead of making use of the API, do the same setup steps above, other than the last one for runnig the API, and then in python, you can use the models like this
 ```python
 # 1) sentence sentiment analysis
 from nexus_ai.sentence_sentiment_analysis import sentence_sentiment_analysis_model
-deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
+# reviews: a list of reviews
+# predictions: the prediction for each review 
 # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted 
 # and the deleted indexes are returned 
+deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
+
 
 
 # 2) aspect based sentiment analysis (ABSA)
 from nexus_ai.ABSA import ABSA_model
+# reviews: a list of reviews
+# df_predictions: a dataframe with three columns: 
+# 1-aspects in each review 2-polarity for each aspect 3-description for each aspect
 deleted_idx, df_predictions = ABSA_model.pred(reviews)
-from nexus_ai.time_series_forecasting import time_series_model
+
 
 
 # 3) time series forecasting 
+from nexus_ai.time_series_forecasting import time_series_model
 # data: JSON string
-time_series_model.pred(data)
+# time_series: a list with the last year monthly avarage ratings
+# plus the prediction of the avarage ratings for the next three months
+time_series = time_series_model.pred(data)
 ```
 
 
