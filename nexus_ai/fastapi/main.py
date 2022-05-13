@@ -52,6 +52,7 @@ async def sentence_sentiment_analysis(data: data_model):
 
     df['aspects'] = df_predictions['aspect']
     df['aspects_sentiment'] = df_predictions['sentiment']
+    df['aspects_description'] = df_predictions['description']
 
     json = df.to_json(orient='records')
 
