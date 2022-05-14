@@ -68,9 +68,6 @@ matplotlib==3.5.1
 matplotlib-inline==0.1.3
 metric-visualizer==0.4.21
 mistune==0.8.4
-mkl-fft==1.3.1
-mkl-random==1.2.2
-mkl-service==2.4.0
 murmurhash==1.0.6
 nbclient==0.6.0
 nbconvert==6.5.0
@@ -90,7 +87,6 @@ pathy==0.6.1
 patsy==0.5.2
 pickleshare==0.7.5
 Pillow==9.0.1
-pip==22.0.4
 ply==3.11
 pmdarima==1.8.5
 preshed==3.0.6
@@ -111,8 +107,6 @@ python-dotenv==0.20.0
 python-multipart==0.0.5
 pytorch-warmup==0.1.0
 pytz==2022.1
-pywin32==303
-pywinpty==2.0.5
 PyYAML==6.0
 pyzmq==22.3.0
 regex==2022.3.15

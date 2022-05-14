@@ -21,7 +21,7 @@ cd NEXUS_AI
 # source venv/bin/activate                     # activate venv virtual environment for (linux)
 # venv/source/activate                         # activate venv virtual environment for (windows)
 pip install -r requirements.txt                # Install the dependencies
-pip install -e                                 # install nexus_ai package
+pip install .                                  # install nexus_ai package
 python -m spacy download en_core_web_sm        # download spacy model
 uvicorn nexus_ai.fastapi.main:app --reload     # run API
 ```
