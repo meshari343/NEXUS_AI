@@ -45,17 +45,56 @@ def get_dic():
         '5 days ago': subtract_days(5),
         '6 days ago': subtract_days(6),
     }
-
+def complete_months(df):
+    complete_year = []
+    # appending today month and year e.g., 2022/05
+    complete_year.append(date.today().strftime('%Y/%m'))
+    # appending the past 11 months from the current month
+    for i in range(11):
+        complete_year.append(subtract_months(i+1))
+    # create an array with nan values to be the dataframe values with the complete year being the index
+    nan_array = np.empty((12, 1))
+    nan_array[:] = np.nan
+    # creating a dataframe with complete year as index and nan values
+    df_complete_year = pd.DataFrame(nan_array, index=complete_year, columns=['rating'])
+    # getting the missing months from the dataframe
+    missing_months = df_complete_year.index.difference(df.index)
+    # appending missing months to the dataframe
+    df = pd.concat((df, df_complete_year.loc[missing_months, :]))
+        
+    return df
+        
 def pred(json): 
     text_to_date = get_dic()
     df = pd.read_json(json)
+    # remove dates outside of the dictionary e.g., a year ago
     df = df[df['date'].isin(text_to_date.keys())]
+
+    # transform the dates from text to a text with the year and month e.g., a month ago --> 2022/04
     df["date"].replace(text_to_date, inplace=True)
+
+    # getting the avarage rating for each month in the last year
     df = df.groupby(['date']).mean()
-    
+
+    # making sure there's at least 4 months with ratings
+    if len(df) < 4:
+        return None
+
+    # compelte months with no rating, with nan values for now
+    df = complete_months(df)
+
+    # if there's months with no ratings at the start or end of the dataframe drop them
+    first_idx = df.first_valid_index()
+    last_idx = df.last_valid_index()
+    df = df.loc[first_idx:last_idx]
+
+    # filling missing values (months with no ratings) in the middle
+    df.fillna(method='bfill', inplace=True)
+
+    df = df[:9]
     warnings.filterwarnings("ignore")
     stepwise_fit = auto_arima(
-        df.values,
+        df.values.flatten(),
         start_p=0,
         start_q=0,
         max_p=6,
@@ -67,16 +106,22 @@ def pred(json):
         random_state=12,
     #     d = 2,
     #     stationary=True, 
-    #     seasonal=True, 
-    #     m=2,
-        stepwise=True  
+        # seasonal=True, 
+        # m=4,
+        # D=None,
+        # seasonal_test='ch',
+        stepwise=True 
     )
-
-    stepwise_fit.summary()
     
-    time_series = df.values
-    forecasting = np.array(stepwise_fit.predict(3)).clip(5).reshape(-1, 1)
+    time_series = df.values.flatten().tolist()
+    forecasting = np.array(stepwise_fit.predict(3)).tolist()
 
-    np.concatenate((time_series, forecasting))
+    # past_values: the last year monthly avarage ratings, min: 3 months, max: 12 months
+    # future_forecasting: the prediction for the next 3 months avarage ratings
+    result = {
+        "past_values": time_series,
+        "future_forecasting": forecasting
+    }
     
-    return time_series.tolist()   
+
+    return result  

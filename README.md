@@ -76,9 +76,11 @@ deleted_idx, df_predictions = ABSA_model.pred(reviews)
 
 # 3) time series forecasting 
 from nexus_ai.time_series_forecasting import time_series_model
-# data: JSON string with a list of reviews in each review a rating and date must be present
-# time_series: a list with the last year monthly avarage ratings
-# plus the prediction of the avarage ratings for the next three months
+# data: JSON string with the same format as the json sample above 
+# but the username, and text are not needed
+# time_series: a dictionary containing two keys:
+# past_values: the last year monthly avarage ratings, min: 3 months, max: 12 months
+# future_forecasting: the prediction for the next 3 months avarage ratings
 time_series = time_series_model.pred(data)
 ```
 
