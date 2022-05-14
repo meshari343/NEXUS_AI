@@ -14,7 +14,7 @@ to use the API, Run the following commands in the terminal to clone the reposito
 after running the first command and cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models)
 ```bash
 git clone https://github.com/meshari343/NEXUS_AI
-cd MLND_capstone
+cd NEXUS_AI
 # the below commented commands is for creating the virtual environment and they are optional:
 # pip instal venv
 # python -m venv venv                          # create venv virtual environment
@@ -24,9 +24,9 @@ pip install -r requirements.txt                # Install the dependencies
 pip install -e                                 # install nexus_ai package
 uvicorn nexus_ai.fastapi.main:app --reload     # run API
 ```
-after that, you can go to http://127.0.0.1:8000 in your local browser.
+after that, you can go to http://127.0.0.1:8000 in your local browser, to see the API documentation.
 
-below is a JSON sample input dataset, to use in testing out the API.
+below is a JSON sample input dataset, to use in testing out the API models.
 ```json
 [
 {"rating": 5.0,
