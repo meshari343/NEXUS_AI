@@ -9,7 +9,7 @@ in this repository you would find the ML models that support this platform, you 
 
 ## setup
 
-to use the API, Run the following commands in the terminal to clone the repository and install the dependencies.
+to use the API, first of all make sure you are using python 3.10 or create a conda virtual enviroment with this python version, and then run the following commands in the terminal to clone the repository and install the dependencies.
 
 after running the first command and cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models)
 ```bash

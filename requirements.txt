@@ -98,7 +98,7 @@ prometheus-client==0.14.1
 prompt-toolkit==3.0.29
 psutil==5.9.0
 pure-eval==0.2.2
-pyabsa==1.14.4
+pyabsa==1.14.2
 pycparser==2.21
 pydantic==1.8.2
 Pygments==2.11.2
