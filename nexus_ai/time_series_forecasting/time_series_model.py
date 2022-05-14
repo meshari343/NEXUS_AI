@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import date, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import warnings
 from pmdarima import  auto_arima
@@ -8,7 +9,10 @@ from pmdarima import  auto_arima
 # subtacting months from today date and returning a str with the year and month e.g.2022/04
 def subtract_months(months):
     return (date.today() - relativedelta(months=months)).strftime('%Y/%m')
-
+    
+# add months from given date and return a str with the year and month e.g.2022/04
+def add_months(date_, months):
+    return (date_ + relativedelta(months=months)).strftime('%Y/%m')
 
 # subtacting weeks from today date and returning a str with the year and month e.g.2022/04
 def subtract_weeks(weeks):
@@ -64,7 +68,7 @@ def complete_months(df):
         
     return df
         
-def pred(json): 
+def pred(json, seasonal=False): 
     text_to_date = get_dic()
     df = pd.read_json(json)
     # remove dates outside of the dictionary e.g., a year ago
@@ -91,36 +95,52 @@ def pred(json):
     # filling missing values (months with no ratings) in the middle
     df.fillna(method='bfill', inplace=True)
 
-    df = df[:9]
     warnings.filterwarnings("ignore")
-    stepwise_fit = auto_arima(
-        df.values.flatten(),
-        start_p=0,
-        start_q=0,
-        max_p=6,
-        max_q=6,
-        start_P=0,
-        start_Q=0,
-        max_P=6,
-        max_Q=6,
-        random_state=12,
-    #     d = 2,
-    #     stationary=True, 
-        # seasonal=True, 
-        # m=4,
-        # D=None,
-        # seasonal_test='ch',
-        stepwise=True 
-    )
+    if seasonal:
+        stepwise_fit = auto_arima(
+            df.values.flatten(),
+            start_p=0,
+            start_q=0,
+            max_p=6,
+            max_q=6,
+            start_P=0,
+            start_Q=0,
+            max_P=6,
+            max_Q=6,
+            random_state=12,
+            seasonal=True, 
+            m=4,
+            D=None,
+            seasonal_test='ch',
+            stepwise=True 
+        )
+    else:
+        stepwise_fit = auto_arima(
+            df.values.flatten(),
+            start_p=0,
+            start_q=0,
+            max_p=6,
+            max_q=6,
+            random_state=12, 
+            seasonal=False,
+            stepwise=True,
+        )
     
     time_series = df.values.flatten().tolist()
-    forecasting = np.array(stepwise_fit.predict(3)).tolist()
-
+    forecasting = np.array(stepwise_fit.predict(3)).clip(0, 5).tolist()
+    past_dates = df.index.to_list()
+    last_month = datetime.strptime(past_dates[-1], "%Y/%m").date()
+    future_dates = [add_months(last_month, i) for i in range(1, len(forecasting)+1)]
+    
     # past_values: the last year monthly avarage ratings, min: 3 months, max: 12 months
+    # past_dates: the year/month associated with each value of the past
     # future_forecasting: the prediction for the next 3 months avarage ratings
+    # future_dates: the year/month associated with each value of the forecasted future
     result = {
         "past_values": time_series,
-        "future_forecasting": forecasting
+        "past_dates": past_dates,
+        "future_forecasting": forecasting,
+        "future_dates": future_dates
     }
     
 

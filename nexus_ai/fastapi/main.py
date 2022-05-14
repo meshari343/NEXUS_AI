@@ -1,7 +1,8 @@
 import pandas as pd
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Header
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, conlist, Extra
+from typing import Optional
 # import pydantic
 # from requests import Response
 from nexus_ai.sentence_sentiment_analysis import sentence_sentiment_analysis_model
@@ -29,9 +30,10 @@ app = FastAPI()
 async def root():
     return RedirectResponse(url='/docs')
 
+
 @app.post("/time_series", status_code=status.HTTP_201_CREATED)
-async def timeseries(data: data_model):
-    return time_series_model.pred(data.json())
+async def timeseries(data: data_model, seasonal: Optional[bool] = Header(default=False)):
+    return time_series_model.pred(data.json(), seasonal)
 
 
 @app.post("/sentiment_analysis", status_code=status.HTTP_201_CREATED)

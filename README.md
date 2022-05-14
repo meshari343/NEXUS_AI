@@ -57,31 +57,35 @@ if you would like to use the model inside python, instead of making use of the A
 ```python
 # 1) sentence sentiment analysis
 from nexus_ai.sentence_sentiment_analysis import sentence_sentiment_analysis_model
+deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
 # reviews: a list of reviews
 # predictions: the prediction for each review 
 # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted 
 # and the deleted indexes are returned 
-deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
 
 
 
 # 2) aspect based sentiment analysis (ABSA)
 from nexus_ai.ABSA import ABSA_model
+deleted_idx, df_predictions = ABSA_model.pred(reviews)
 # reviews: a list of reviews
 # df_predictions: a dataframe with three columns: 
 # 1-aspects in each review 2-polarity for each aspect 3-description for each aspect
-deleted_idx, df_predictions = ABSA_model.pred(reviews)
 
 
 
 # 3) time series forecasting 
 from nexus_ai.time_series_forecasting import time_series_model
+time_series = time_series_model.pred(data, seasonal=True)
 # data: JSON string with the same format as the json sample above 
-# but the username, and text are not needed
-# time_series: a dictionary containing two keys:
+# but the username, and text are not optional
+# seasonal: an optional boolean parameter to decide whetever to use seasonal_test 
+# note that without seasonal test the model building is x6 times faster
+# time_series: a dictionary containing four keys:
 # past_values: the last year monthly avarage ratings, min: 3 months, max: 12 months
+# past_dates: the year/month associated with each value of the past
 # future_forecasting: the prediction for the next 3 months avarage ratings
-time_series = time_series_model.pred(data)
+# future_dates: the year/month associated with each value of the forecasted future
 ```
 
 
