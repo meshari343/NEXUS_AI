@@ -77,7 +77,6 @@ nbconvert==6.5.0
 nbformat==5.3.0
 nest-asyncio==1.5.5
 networkx==2.8
-nexus-ai==1.0
 nltk==3.7
 notebook==6.4.10
 numpy==1.22.3

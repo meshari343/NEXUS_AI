@@ -22,6 +22,7 @@ cd NEXUS_AI
 # venv/source/activate                         # activate venv virtual environment for (windows)
 pip install -r requirements.txt                # Install the dependencies
 pip install -e                                 # install nexus_ai package
+python -m spacy download en_core_web_sm        # download spacy model
 uvicorn nexus_ai.fastapi.main:app --reload     # run API
 ```
 after that, you can go to http://127.0.0.1:8000 in your local browser, to see the API documentation.
