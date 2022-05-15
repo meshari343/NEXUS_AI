@@ -5,7 +5,7 @@ import spacy
 
 checkpoint_name = 'nexus_ai/ABSA/ATEPC_models/fast_lcf_atepc_custom_dataset_cdw_apcacc_88.84_apcf1_80.21_atef1_86.77'
 
-aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name,eval_batch_size=1000)
+aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name,eval_batch_size=1000, auto_device='cpu')
 
 nlp = spacy.load("en_core_web_sm")
 
