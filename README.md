@@ -70,8 +70,10 @@ deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
 from nexus_ai.ABSA import ABSA_model
 deleted_idx, df_predictions = ABSA_model.pred(reviews)
 # reviews: a list of reviews
-# df_predictions: a dataframe with three columns: 
-# 1-aspects in each review 2-polarity for each aspect 3-description for each aspect
+# df_predictions: a dictionary with three keys: 
+# "aspects": a list of lists each list, contains the aspects for each review
+# "aspects_sentiment": a list of lists, each list contains the polarity for each aspect
+# "aspects_description": a list of lists, each list contains the description for each aspect
 
 
 
@@ -83,10 +85,10 @@ time_series = time_series_model.pred(data, seasonal=True)
 # seasonal: an optional boolean parameter to decide whetever to use seasonal_test 
 # note that without seasonal test the model building is x6 times faster
 # time_series: a dictionary containing four keys:
-# past_values: the last year monthly avarage ratings, min: 3 months, max: 12 months
-# past_dates: the year/month associated with each value of the past
-# future_forecasting: the prediction for the next 3 months avarage ratings
-# future_dates: the year/month associated with each value of the forecasted future
+# "past_values": the last year monthly avarage ratings, min: 3 months, max: 12 months
+# "past_date""s: the year/month associated with each value of the past
+# "future_forecasting": the prediction for the next 3 months avarage ratings
+# "future_dates": the year/month associated with each value of the forecasted future
 ```
 
 

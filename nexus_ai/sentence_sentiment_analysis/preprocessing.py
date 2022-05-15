@@ -37,7 +37,7 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
-def clean_reviews_list(reviews, source='google', labels=None, punct=True, stopwords_=False, stemm=False):
+def clean_reviews_list(reviews, source='google', labels=None, transform_punct=True, remove_punct=False, stopwords_=False, stemm=False):
 
     stop_words = stopwords.words('english')
     ps = PorterStemmer()
@@ -49,13 +49,11 @@ def clean_reviews_list(reviews, source='google', labels=None, punct=True, stopwo
     if labels:
         data = {'text':reviews,'label':labels}
         df = pd.DataFrame(data, columns=['text','label'])
-
     else:
         df = pd.DataFrame(reviews, columns=['text'])
 
-    # To make sure to return the original text without modifying it, 
+    # To make sure to not return the preprocced text, 
     # while at the same time deleting reviews that do not meet the requirements.
-    # df_non_processed = pd.DataFrame(reviews, columns=['text'])
     deleted_idx = []
 
     # if labels are included proccess lables into 1/0 which is pos/neg instead of scores
@@ -133,10 +131,10 @@ def clean_reviews_list(reviews, source='google', labels=None, punct=True, stopwo
     # replace punctuation with token_dict values speceifed above 
     # while putting space as to not create multiple instance of the same word 
     # for example eating. would be treated as a new word diffrent from eating
-    if punct:
+    if transform_punct:
         for key, token in token_dict.items():
             df['text'] = df['text'].str.replace(key, ' {} '.format(token), regex=False)
-    else:
+    elif remove_punct:
         df['text'] = df['text'].apply(lambda x: [c for c in x if c not in punctuation])
         df['text'] = df['text'].str.join('')
 

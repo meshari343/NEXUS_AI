@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import pandas as pd
 import torch
@@ -100,6 +101,14 @@ def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
 
         for i in pred:
             pred_list.append(i)
+
+    pred_list = ['Positive' if prediction == 1 else('Negative' if prediction == 1 else None) for prediction in pred_list]
+    # test logging 
+    # pred_list.remove('positive')
+    # pred_list.append(None)
+    if None in pred_list:
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+        logging.warning('irregular output in sentince sentiment analysis')
 
     return deleted_idx, pred_list    
 

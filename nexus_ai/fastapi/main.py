@@ -3,6 +3,7 @@ from fastapi import FastAPI, status, Header
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, conlist, Extra
 from typing import Optional
+import json
 # import pydantic
 # from requests import Response
 from nexus_ai.sentence_sentiment_analysis import sentence_sentiment_analysis_model
@@ -49,16 +50,17 @@ async def sentence_sentiment_analysis(data: data_model):
 
     reviews = list(df['text'])
     # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
-    deleted_idx, df_predictions = ABSA_model.pred(reviews)
+    deleted_idx, ABSA_predictions = ABSA_model.pred(reviews)
     df.drop(deleted_idx, axis=0, inplace=True)
 
-    df['aspects'] = df_predictions['aspect']
-    df['aspects_sentiment'] = df_predictions['sentiment']
-    df['aspects_description'] = df_predictions['description']
+    df['aspects'] = ABSA_predictions['aspect']
+    df['aspects_sentiment'] = ABSA_predictions['sentiment']
+    df['aspects_description'] = ABSA_predictions['description']
 
-    json = df.to_json(orient='records')
+    json_str = df.to_json(orient='records')
+    json_obj = json.loads(json_str)
 
-    return json
+    return json_obj
 
 
 
@@ -68,15 +70,16 @@ async def ABSA(data: data_model):
     reviews = list(df['text'])
 
     # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
-    deleted_idx, df_predictions = ABSA_model.pred(reviews)
+    deleted_idx, predictions = ABSA_model.pred(reviews)
     df.drop(deleted_idx, axis=0, inplace=True)
 
-    df['aspects'] = df_predictions['aspect']
-    df['sentiments'] = df_predictions['sentiment']
+    df['aspects'] = predictions['aspect']
+    df['sentiments'] = predictions['sentiment']
 
-    json = df.to_json(orient='records')
+    json_str = df.to_json(orient='records')
+    json_obj = json.loads(json_str)
 
-    return json
+    return json_obj
 
 
 @app.post("/sentence_sentiment_analysis", status_code=status.HTTP_201_CREATED)
@@ -90,6 +93,7 @@ async def sentence_sentiment_analysis(data: data_model):
 
     df['prediction'] = predictions
 
-    json = df.to_json(orient='records')
+    json_str = df.to_json(orient='records')
+    json_obj = json.loads(json_str)
 
-    return json
+    return json_obj

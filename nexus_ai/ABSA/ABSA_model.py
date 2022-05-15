@@ -1,14 +1,13 @@
 import pandas as pd
 from pyabsa import ATEPCCheckpointManager
-from langdetect import detect
-from langdetect.lang_detect_exception import LangDetectException
+from nexus_ai.sentence_sentiment_analysis.preprocessing import clean_reviews_list
 import spacy
 
 checkpoint_name = 'nexus_ai/ABSA/ATEPC_models/fast_lcf_atepc_custom_dataset_cdw_apcacc_88.84_apcf1_80.21_atef1_86.77'
 
-aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name)
+aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name,eval_batch_size=1000)
 
-nlp = spacy.load("en_core_web_lg")
+nlp = spacy.load("en_core_web_sm")
 
 # add description for each aspect in each row or review
 def add_desctiption(row):
@@ -44,33 +43,10 @@ def add_desctiption(row):
 
 
 def pred(reviews):
-
-    df = pd.DataFrame(reviews, columns=['text'])
-    deleted_idx = []
-
-    # remove outliers (zreo length reviews)
-    lengths = df['text'].apply(lambda x: len(x))
-    zero_idx = df[lengths == 0].index
-    deleted_idx.extend(list(zero_idx))
-    df.drop(zero_idx, axis=0, inplace=True)
-
-    lambda_ = lambda x: x if detect(x) == 'en' else None
-    # detect non english reviews
-    for i in range(len(df)):
-        if(len(df.iloc[i, 0]) > 40):
-            try:
-                df.iloc[i, 0] = lambda_(df.iloc[i, 0])
-            # if the number of words in the text is shorter than 10 
-            # or if the text contain only numbers/symbols LangDetect would raise an exception
-            except LangDetectException:
-                pass
-    # remove non english reviews           
-    none_value = df[df['text'].isnull()].index
-    df.drop(none_value, axis=0, inplace=True)
-    deleted_idx.extend(list(none_value))
+    deleted_idx, processed_reviews = clean_reviews_list(reviews, transform_punct=False, remove_punct=False)
 
     prediction = aspect_extractor.extract_aspect(
-        inference_source=list(df['text']),
+        inference_source=processed_reviews,
         save_result=False,
         print_result=False,
         pred_sentiment=True
@@ -80,4 +56,8 @@ def pred(reviews):
     
     prediction = prediction.apply(add_desctiption, axis=1)
 
+    prediction.drop(['sentence','IOB', 'tokens', 'position'], axis=1, inplace=True)
+
+    prediction = prediction.to_dict(orient='list')
+    
     return deleted_idx, prediction
