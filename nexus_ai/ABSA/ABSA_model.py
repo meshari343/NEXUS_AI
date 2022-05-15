@@ -5,7 +5,8 @@ import spacy
 
 checkpoint_name = 'nexus_ai/ABSA/ATEPC_models/fast_lcf_atepc_custom_dataset_cdw_apcacc_88.84_apcf1_80.21_atef1_86.77'
 
-aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name,eval_batch_size=1000, auto_device='cpu')
+# aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name,eval_batch_size=1000, auto_device='cpu')
+aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkpoint_name,eval_batch_size=1000)
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -43,15 +44,15 @@ def add_desctiption(row):
 
 
 def pred(reviews):
-    deleted_idx, processed_reviews = clean_reviews_list(reviews, transform_punct=False, remove_punct=False)
-
+    deleted_idx, processed_reviews = clean_reviews_list(reviews, transform_punct=False, remove_punct=True)
+    print(processed_reviews[:50])
     prediction = aspect_extractor.extract_aspect(
         inference_source=processed_reviews,
         save_result=False,
         print_result=False,
         pred_sentiment=True
     )
-
+    print(prediction)
     prediction = pd.DataFrame(prediction)
     
     prediction = prediction.apply(add_desctiption, axis=1)

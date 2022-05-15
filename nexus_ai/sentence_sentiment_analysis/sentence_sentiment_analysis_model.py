@@ -8,6 +8,8 @@ from nexus_ai.sentence_sentiment_analysis.model import SentimentRNN
 from torch.utils.data import TensorDataset, DataLoader
 
 
+
+
 def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
  model_path='nexus_ai/sentence_sentiment_analysis/models/yelp_test20.pth'):
     ''' 
@@ -26,6 +28,8 @@ def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
 
 
     '''
+
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
     if not reviews:
         raise Exception('please specify a reviews list')
@@ -92,22 +96,25 @@ def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
 
         # get the output from the model        
         output, h = net(data, h)
-        
+
         # convert output probabilities to predicted class (0 or 1)
         pred = torch.round(output.squeeze()) 
- 
         pred = pred.cpu()
-        pred = pred.detach().numpy().tolist()
+        pred = pred.data.detach().numpy().tolist()
+        
+        if isinstance(pred, float):
+            pred_list.append(pred)
+        elif isinstance(pred, list):
+            for i in pred:
+                pred_list.append(i)
+        else:
+            logging.warning('irregular output in sentince sentiment analysis')
 
-        for i in pred:
-            pred_list.append(i)
-
-    pred_list = ['Positive' if prediction == 1 else('Negative' if prediction == 1 else None) for prediction in pred_list]
+    pred_list = ['Positive' if prediction == 1 else('Negative' if prediction == 0 else None) for prediction in pred_list]
     # test logging 
     # pred_list.remove('positive')
     # pred_list.append(None)
-    if None in pred_list:
-        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    if None in pred_list:     
         logging.warning('irregular output in sentince sentiment analysis')
 
     return deleted_idx, pred_list    
@@ -135,8 +142,8 @@ def predict(data_path=None, dataframe=None, reviews=None, labels=None, column=No
     stats : whethever to print out the statics of the prediction or not
     
     '''
-
-    print('note that this method is only for testing purposes')
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    logging.warning('note that this method is only for testing purposes')
 
     if reviews is None and dataframe is None and data_path is None:
         raise Exception('please specify either a 1) data_path 2) dataframe holding with the data 3) a review list or stirng')

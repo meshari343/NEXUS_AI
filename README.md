@@ -36,7 +36,7 @@ python -m spacy download en_core_web_sm      # download spacy model
 ```
 ### Run the API
 ```bash
-uvicorn nexus_ai.fastapi.main:app            # add --reload at the end if you would like to modify the code
+python nexus_ai/fastapi/main.py              # add --reload at the end if you would like to modify the code
 ```
 after that, you can go to http://127.0.0.1:8000 in your local browser, to see the API documentation.
 ### Data sample
