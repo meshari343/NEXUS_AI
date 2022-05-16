@@ -5,42 +5,55 @@ business owners in Restaurant and Café sector to make data-driven
 decisions based on their customer's reviews on social
 media platforms.
 
-in this repository you would find the ML models that support this platform, you can view the platform that was implemented using Node.js in this [repository](https://github.com/SimplyRayan/Nexus-Backend). 
+in this repository you would find the API to the ML models that support this platform, you can view the platform that was implemented using Node.js in this [repository](https://github.com/SimplyRayan/Nexus-Backend). 
 
 ## setup
 
-to use the API, first of all make sure you are using python 3.10 or create a conda virtual enviroment with this python version, and then run the following commands in the terminal to clone the repository and install the dependencies.
-### Clone the repository
+### using docker 
+#### Clone the repository
 ```bash
 git clone https://github.com/meshari343/NEXUS_AI
 ```
-after cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models)
-### (Optional) Linux creating virtual environment 
+**important:** after cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models)
+#### create docker container
+```bash
+CD NEXUS_AI
+docker build -t nexus_ai .
+docker run --name nexus_ai -p 8000:8000 -d nexus_ai
+```
+### using traditional method
+make sure you are using python 3.10 or create a conda virtual environment with this python version, and then run the following commands in the terminal to clone the repository and install the dependencies.
+#### Clone the repository
+```bash
+git clone https://github.com/meshari343/NEXUS_AI
+```
+**important:** after cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models)
+#### (Optional) Linux creating virtual environment 
 ```bash
 pip instal venv
 python -m venv venv                          # create venv virtual environment
 source venv/bin/activate                     # activate venv virtual environment 
 ```
-### (Optional) Windows creating virtual environment 
+#### (Optional) Windows creating virtual environment 
 ```bash
 pip instal venv
 python -m venv venv                          # create venv virtual environment
 venv/source/activate                         # activate venv virtual environment 
 ```
-### install the package & dependencies
+#### install the package & dependencies
 ```bash
 pip install -r requirements.txt              # Install the dependencies
 cd NEXUS_AI
 pip install .                                # install nexus_ai package
 python -m spacy download en_core_web_sm      # download spacy model
 ```
-### Run the API
+#### Run the API
 ```bash
-python nexus_ai/fastapi/main.py              # add --reload at the end if you would like to modify the code
+python main.py                               
 ```
 after that, you can go to http://127.0.0.1:8000 in your local browser, to see the API documentation.
 ### Data sample
-below is a JSON sample input dataset, to use in testing out the API models.
+below is a JSON sample input dataset to test out the API models.
 ```json
 [
 {"rating": 5.0,
@@ -67,13 +80,14 @@ below is a JSON sample input dataset, to use in testing out the API models.
 
 ## Usage
 
-if you would like to use the model inside python, instead of making use of the API, do the same setup steps above, other than the last one for runnig the API, and then in python, you can use the models like this.
+if you would like to use the model inside python, instead of making use of the API, do the same setup steps above, other than the last one for running the API, and then in python, you can use the models like this.
 ### sentence sentiment analysis
 ```python
 from nexus_ai.sentence_sentiment_analysis import sentence_sentiment_analysis_model
-deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
+deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews, sources)
 ```
 * reviews: List of sentences to classify.
+* (Optional) sources: List with the source of each review, 'Google Maps' since their reviews needs additional preprocessing steps
 * predictions: The prediction for each sentence.
 * deleted_idx: zero-length reviews/non-English reviews are gonna be deleted, and the deleted indexes are returned.
 
@@ -82,9 +96,10 @@ deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
 ### aspect based sentiment analysis (ABSA)
 ```python
 from nexus_ai.ABSA import ABSA_model
-deleted_idx, df_predictions = ABSA_model.pred(reviews)
+deleted_idx, df_predictions = ABSA_model.pred(reviews, sources)
 ```
 - reviews: List of sentences to classify.
+- (Optional) sources: List with the source of each review, 'Google Maps' since their reviews needs additional preprocessing steps
 - df_predictions: Dictionary with three keys: 
     - "aspects": List of lists, each list contains the aspects for each review
     - "aspects_sentiment": List of lists, each list contains the polarity for each aspect
@@ -100,10 +115,10 @@ time_series = time_series_model.pred(data, seasonal=True)
 * data: JSON string with the same format as the json sample above, but the username, and text are not optional.
 * seasonal: Optional boolean parameter, to decide whetever to use seasonal_test, note that without seasonal test the model building process is x6 times faster, but may give lower results.
 * time_series: a dictionary containing four keys:
-    * "past_values": the last year monthly avarage ratings, min: 3 months, max: 12 months.
+    * "past_values": the last year monthly average ratings, min: 3 months, max: 12 months.
     * "past_dates": the year/month associated with each value of the past
-    * "future_forecasting": the prediction for the next 3 months avarage ratings.
+    * "future_forecasting": the prediction for the next 3 months average ratings.
     * "future_dates": the year/month associated for each value of the forecasted future.
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.# NEXUS AI

@@ -37,7 +37,7 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
-def clean_reviews_list(reviews, source='google', labels=None, transform_punct=True, remove_punct=False, stopwords_=False, stemm=False):
+def clean_reviews_list(reviews, source='Google Maps',sources=None, labels=None, transform_punct=True, remove_punct=False, stopwords_=False, stemm=False):
 
     stop_words = stopwords.words('english')
     ps = PorterStemmer()
@@ -47,10 +47,11 @@ def clean_reviews_list(reviews, source='google', labels=None, transform_punct=Tr
 
     # transform to dataframe to make use of linear operations
     if labels:
-        data = {'text':reviews,'label':labels}
-        df = pd.DataFrame(data, columns=['text','label'])
+        data = {'text':reviews,'label':labels, 'source':sources}
+        df = pd.DataFrame(data, columns=['text','label', 'source'])
     else:
-        df = pd.DataFrame(reviews, columns=['text'])
+        data = {'text':reviews,'source':sources}
+        df = pd.DataFrame(data, columns=['text', 'source'])
 
     # To make sure to not return the preprocced text, 
     # while at the same time deleting reviews that do not meet the requirements.
@@ -93,23 +94,38 @@ def clean_reviews_list(reviews, source='google', labels=None, transform_punct=Tr
         df['text'] = df['text'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split()]))     
 
     # if the reviews source is google remove google translataion
-    if source == 'google': 
-        df['text'] = df['text'].str.replace("(translated by google)", '', regex=False)
-        df['text'] = df['text'].str.replace("(original)", '%*?<>!', regex=False)
+    if sources:
+        googlemaps_idx = df[df['source'] == 'Google Maps'].index
+        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].str.replace("(translated by google)", '', regex=False)
+        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].str.replace("(original)", '%*?<>!', regex=False)
         # split each review into before and after the original
-        df['text'] = df['text'].str.partition('%*?<>!', expand=False)
+        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].str.partition('%*?<>!', expand=False)
         # take the text before the original (the translated review)
-        df['text'] = df['text'].apply(lambda x: x[0])
+        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].apply(lambda x: x[0])
         # after removing the google translation remove outliers (zreo length reviews)
         lengths = df['text'].apply(lambda x: len(x))
         zero_idx = df[lengths == 0].index
         deleted_idx.extend(list(zero_idx))
         df.drop(zero_idx, axis=0, inplace=True)
-        # df = df.reset_index(drop=True)
-        # drop in not processed
-        # df_non_processed.drop(zero_idx, axis=0, inplace=True)
-        # df_non_processed = df.reset_index(drop=True)
+    else:
+        if source == 'Google Maps': 
+            df['text'] = df['text'].str.replace("(translated by google)", '', regex=False)
+            df['text'] = df['text'].str.replace("(original)", '%*?<>!', regex=False)
+            # split each review into before and after the original
+            df['text'] = df['text'].str.partition('%*?<>!', expand=False)
+            # take the text before the original (the translated review)
+            df['text'] = df['text'].apply(lambda x: x[0])
+            # after removing the google translation remove outliers (zreo length reviews)
+            lengths = df['text'].apply(lambda x: len(x))
+            zero_idx = df[lengths == 0].index
+            deleted_idx.extend(list(zero_idx))
+            df.drop(zero_idx, axis=0, inplace=True)
+            # df = df.reset_index(drop=True)
+            # drop in not processed
+            # df_non_processed.drop(zero_idx, axis=0, inplace=True)
+            # df_non_processed = df.reset_index(drop=True)
 
+        
     # remove non english reviews
     lambda_ = lambda x: x if detect(x) == 'en' else None
     for i in range(len(df)):

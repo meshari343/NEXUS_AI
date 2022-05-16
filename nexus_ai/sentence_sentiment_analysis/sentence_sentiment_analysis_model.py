@@ -10,7 +10,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 
 
-def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
+def pred(reviews, source='Google Maps', sources=None, gpu=False, seq_length=20, batch_size=1000,
  model_path='nexus_ai/sentence_sentiment_analysis/models/yelp_test20.pth'):
     ''' 
     
@@ -62,8 +62,8 @@ def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
     net.eval()  
 
     # process the list of reviews
-    deleted_idx, processed_reviews = clean_reviews_list(reviews)
-
+    deleted_idx, processed_reviews = clean_reviews_list(reviews,source=source, sources=sources)
+    
     # tokenize review
     reviews_ints = tokenize_data(processed_reviews, vocab_to_int)  
         

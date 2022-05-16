@@ -43,8 +43,8 @@ def add_desctiption(row):
     return row
 
 
-def pred(reviews):
-    deleted_idx, processed_reviews = clean_reviews_list(reviews, transform_punct=False, remove_punct=True)
+def pred(reviews, source='Google Maps', sources=None):
+    deleted_idx, processed_reviews = clean_reviews_list(reviews, source=source, sources=sources, transform_punct=False, remove_punct=True)
 
     prediction = aspect_extractor.extract_aspect(
         inference_source=processed_reviews,
