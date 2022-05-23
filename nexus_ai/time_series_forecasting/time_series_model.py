@@ -98,7 +98,7 @@ def pred(json, seasonal=False):
     warnings.filterwarnings("ignore")
     if seasonal:
         stepwise_fit = auto_arima(
-            df.values.flatten(),
+            df.values,
             start_p=0,
             start_q=0,
             max_p=6,
@@ -116,7 +116,7 @@ def pred(json, seasonal=False):
         )
     else:
         stepwise_fit = auto_arima(
-            df.values.flatten(),
+            df.values,
             start_p=0,
             start_q=0,
             max_p=6,

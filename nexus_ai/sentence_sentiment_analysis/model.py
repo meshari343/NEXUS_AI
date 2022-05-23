@@ -32,7 +32,7 @@ class SentimentRNN(nn.Module):
             else:
                 self.lstm = nn.LSTM(embedding_dim, hidden_dim, n_layers, batch_first=True, bidirectional= True)            
           
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(drop_prob)
         
         if not (bidirectional):
             self.fc1 = nn.Linear(hidden_dim, output_size)

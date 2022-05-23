@@ -59,11 +59,13 @@ async def sentence_sentiment_analysis(data: sentiment__data_model):
     # deleted_idx: zero length reviews/non english reviews are gonna be deleted and the delted indexes are returned
     deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews, sources=sources)
     df.drop(deleted_idx, axis=0, inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
     df['sentence_sentiment'] = predictions
 
     reviews = list(df['text'])
     sources = list(df['source'])
+
     # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
     deleted_idx, ABSA_predictions = ABSA_model.pred(reviews, sources=sources)
     df.drop(deleted_idx, axis=0, inplace=True)
@@ -83,13 +85,15 @@ async def sentence_sentiment_analysis(data: sentiment__data_model):
 async def ABSA(data: sentiment__data_model):
     df = pd.read_json(data.json())
     reviews = list(df['text'])
+    sources = list(df['source'])
 
     # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
-    deleted_idx, predictions = ABSA_model.pred(reviews)
+    deleted_idx, predictions = ABSA_model.pred(reviews, sources=sources)
     df.drop(deleted_idx, axis=0, inplace=True)
 
     df['aspects'] = predictions['aspect']
     df['sentiments'] = predictions['sentiment']
+    df['aspects_description'] = predictions['description']
 
     json_str = df.to_json(orient='records')
     json_obj = json.loads(json_str)
@@ -101,9 +105,10 @@ async def ABSA(data: sentiment__data_model):
 async def sentence_sentiment_analysis(data: sentiment__data_model):
     df = pd.read_json(data.json())
     reviews = list(df['text'])
+    sources = list(df['source'])
 
     # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
-    deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews)
+    deleted_idx, predictions = sentence_sentiment_analysis_model.pred(reviews, sources=sources)
     df.drop(deleted_idx, axis=0, inplace=True)
 
     df['prediction'] = predictions

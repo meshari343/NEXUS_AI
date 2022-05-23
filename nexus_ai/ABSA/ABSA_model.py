@@ -1,7 +1,9 @@
 import pandas as pd
 from pyabsa import ATEPCCheckpointManager
-from nexus_ai.sentence_sentiment_analysis.preprocessing import clean_reviews_list
 import spacy
+from langdetect import detect
+from langdetect.lang_detect_exception import LangDetectException
+from nexus_ai.utilities import process_google_reviews, remove_emoji, clean_review
 
 checkpoint_name = 'nexus_ai/ABSA/ATEPC_models/fast_lcf_atepc_custom_dataset_cdw_apcacc_88.84_apcf1_80.21_atef1_86.77'
 
@@ -10,6 +12,7 @@ aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint=checkp
 
 nlp = spacy.load("en_core_web_sm")
 
+    
 # add description for each aspect in each row or review
 def add_desctiption(row):
     descriptions = []
@@ -44,7 +47,32 @@ def add_desctiption(row):
 
 
 def pred(reviews, source='Google Maps', sources=None):
-    deleted_idx, processed_reviews = clean_reviews_list(reviews, source=source, sources=sources, transform_punct=False, remove_punct=True)
+    reviews = process_google_reviews(reviews, source=source, sources=sources, only_english=True)
+    deleted_idx = []
+    # remove emojis
+    reviews = [remove_emoji(review) if review != None else None for review in reviews]
+    # clean english reviews
+    for i, review in enumerate(reviews):
+        if review != None:
+            try:
+                if detect(review) == 'en':
+                    reviews[i] = clean_review(review, transform_punct=False, remove_punct=True)
+                # if the review is not english assign none to it for deleting later on
+                else:
+                    reviews[i] = None
+            # if the text is short LangDetect would raise an exception
+            # or if the text contain only numbers/symbols
+            except LangDetectException:
+                # if the review contain only numbers/symbols assign none to it for deleting later on
+                reviews[i] = None
+
+    processed_reviews = []
+    # remove outliers (zreo length reviews)
+    for i, review in enumerate(reviews):
+        if review != None and review != '':
+            processed_reviews.append(review)
+        else: 
+            deleted_idx.append(i)
 
     prediction = aspect_extractor.extract_aspect(
         inference_source=processed_reviews,

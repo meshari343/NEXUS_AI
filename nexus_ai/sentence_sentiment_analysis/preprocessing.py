@@ -5,10 +5,8 @@ from string import punctuation
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 import re
-import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-nltk.download('stopwords')
 from torch.utils.data import TensorDataset, DataLoader
 import torch
 
@@ -36,139 +34,6 @@ def remove_emoji(string):
                                "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', string)
 
-
-def clean_reviews_list(reviews, source='Google Maps',sources=None, labels=None, transform_punct=True, remove_punct=False, stopwords_=False, stemm=False):
-
-    stop_words = stopwords.words('english')
-    ps = PorterStemmer()
-    token_dict = {'.': '||*Period*||', ',': '||*Comma*||', '"': '||*Quotation_Mark*||', 
-                    ';': '||*Semicolon*||', '!': '||*Exclamation_mark*||', '?': '||*Question_mark*||',
-                    '(': '||*Left_Parentheses*||', ')':'||*Right_Parentheses*||', '-': '||*Dash*||', '\n': '||*Return*||'}
-
-    # transform to dataframe to make use of linear operations
-    if labels:
-        data = {'text':reviews,'label':labels, 'source':sources}
-        df = pd.DataFrame(data, columns=['text','label', 'source'])
-    else:
-        data = {'text':reviews,'source':sources}
-        df = pd.DataFrame(data, columns=['text', 'source'])
-
-    # To make sure to not return the preprocced text, 
-    # while at the same time deleting reviews that do not meet the requirements.
-    deleted_idx = []
-
-    # if labels are included proccess lables into 1/0 which is pos/neg instead of scores
-    if labels:
-        df['label'] = df['label'].apply(lambda x:
-                                1 if isinstance(x, str) and float(x[6:9]) >= 2.5 else 
-                                (0 if isinstance(x, str) and float(x[6:9]) <= 2 else 
-                                (1 if isinstance(x, int) and x >= 2.5 else
-                                (0 if isinstance(x, int) and x <= 2 else None))))
-        none_value = df[df['label'].isnull()].index
-        df.drop(none_value, axis=0, inplace=True)
-        deleted_idx.extend(list(none_value))
-  
-    # remove emojis
-    df['text'] = df['text'].apply(lambda x: remove_emoji(x))
-    # remove outliers (zreo length reviews)
-    lengths = df['text'].apply(lambda x: len(x))
-    zero_idx = df[lengths == 0].index
-    deleted_idx.extend(list(zero_idx))
-    df.drop(zero_idx, axis=0, inplace=True)
-    # df = df.reset_index(drop=True)
-    # drop in not processed
-    # df_non_processed.drop(zero_idx, axis=0, inplace=True)
-    # df_non_processed = df.reset_index(drop=True)
-
-    # lower case all charcters to normalize them 
-    df['text'] = df['text'].str.lower()
-    # clearing stop words for example (a, we, on)
-    # steemming the words(returning them to their root for example (stopped --> stop)
-    if stopwords_ and stemm:
-        df['text'] = df['text'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split() 
-                                              if not word in stop_words]))
-    elif stopwords_:
-        df['text'] = df['text'].apply(lambda x: ' '.join([word for word in x.split() 
-                                            if not word in stop_words]))            
-    elif stemm:
-        df['text'] = df['text'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split()]))     
-
-    # if the reviews source is google remove google translataion
-    if sources:
-        googlemaps_idx = df[df['source'] == 'Google Maps'].index
-        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].str.replace("(translated by google)", '', regex=False)
-        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].str.replace("(original)", '%*?<>!', regex=False)
-        # split each review into before and after the original
-        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].str.partition('%*?<>!', expand=False)
-        # take the text before the original (the translated review)
-        df.loc[googlemaps_idx, 'text'] = df.loc[googlemaps_idx, 'text'].apply(lambda x: x[0])
-        # after removing the google translation remove outliers (zreo length reviews)
-        lengths = df['text'].apply(lambda x: len(x))
-        zero_idx = df[lengths == 0].index
-        deleted_idx.extend(list(zero_idx))
-        df.drop(zero_idx, axis=0, inplace=True)
-    else:
-        if source == 'Google Maps': 
-            df['text'] = df['text'].str.replace("(translated by google)", '', regex=False)
-            df['text'] = df['text'].str.replace("(original)", '%*?<>!', regex=False)
-            # split each review into before and after the original
-            df['text'] = df['text'].str.partition('%*?<>!', expand=False)
-            # take the text before the original (the translated review)
-            df['text'] = df['text'].apply(lambda x: x[0])
-            # after removing the google translation remove outliers (zreo length reviews)
-            lengths = df['text'].apply(lambda x: len(x))
-            zero_idx = df[lengths == 0].index
-            deleted_idx.extend(list(zero_idx))
-            df.drop(zero_idx, axis=0, inplace=True)
-            # df = df.reset_index(drop=True)
-            # drop in not processed
-            # df_non_processed.drop(zero_idx, axis=0, inplace=True)
-            # df_non_processed = df.reset_index(drop=True)
-
-        
-    # remove non english reviews
-    lambda_ = lambda x: x if detect(x) == 'en' else None
-    for i in range(len(df)):
-        if(len(df.iloc[i, 0]) > 40):
-            try:
-                df.iloc[i, 0] = lambda_(df.iloc[i, 0])
-            # if the number of words in the text is shorter than 10 LangDetect would raise an exception
-            # or if the text contain only numbers/symbols
-            except LangDetectException:
-                pass
-    none_value = df[df['text'].isnull()].index
-    df.drop(none_value, axis=0, inplace=True)
-    deleted_idx.extend(list(none_value))
-    # df = df.reset_index(drop=True)
-    # drop in not processed
-    # df_non_processed.drop(none_value, axis=0, inplace=True)
-    # df_non_processed = df.reset_index(drop=True)
-
-    # replace punctuation with token_dict values speceifed above 
-    # while putting space as to not create multiple instance of the same word 
-    # for example eating. would be treated as a new word diffrent from eating
-    if transform_punct:
-        for key, token in token_dict.items():
-            df['text'] = df['text'].str.replace(key, ' {} '.format(token), regex=False)
-    elif remove_punct:
-        df['text'] = df['text'].apply(lambda x: [c for c in x if c not in punctuation])
-        df['text'] = df['text'].str.join('')
-
-    #remove outliers (zreo length reviews)
-    lengths = df['text'].apply(lambda x: len(x))
-    zero_idx = df[lengths == 0].index
-    df.drop(zero_idx, axis=0, inplace=True)
-    deleted_idx.extend(list(zero_idx))
-    # df = df.reset_index(drop=True)
-    
-    # drop in not processed
-    # df_non_processed.drop(zero_idx, axis=0, inplace=True)
-    # df_non_processed = df.reset_index(drop=True)
-    
-    if labels:
-        return deleted_idx, list(df['text']), df['label']
-    else:
-        return deleted_idx, list(df['text'])
 
 # old method used in testing
 def google_clean_reviews(data, punct=True, stopwords_=False, stemm=False):
@@ -312,7 +177,7 @@ def creat_vocab(words, size=None, greater_than=None):
     if size:
         vocab_to_int = {word: index for (index,word),stop in zip(enumerate(words_set, 1), range(size))}
     elif greater_than:
-        vocab_to_int = {word: index for index,word in enumerate(words_set, 1)  if words_counter[word] > 100}
+        vocab_to_int = {word: index for index,word in enumerate(words_set, 1)  if words_counter[word] > greater_than}
     else:
         vocab_to_int = {word: index for index,word in enumerate(words_set, 1)}
     
@@ -384,7 +249,7 @@ def clean_reviews_and_creat_vocab(reviews, size=None, greater_than=None, punct=T
     if size:
         vocab_to_int = {word: index for (index,word),stop in zip(enumerate(words_set, 1), range(size))}
     elif greater_than:
-        vocab_to_int = {word: index for index,word in enumerate(words_set, 1)  if words_counter[word] > 100}
+        vocab_to_int = {word: index for index,word in enumerate(words_set, 1)  if words_counter[word] > greater_than}
     else:
         vocab_to_int = {word: index for index,word in enumerate(words_set, 1)}
     
@@ -427,59 +292,86 @@ def pad_features(reviews_ints, seq_length):
     ''' Return features of review_ints, where each review is padded with 0's 
         or truncated to the input seq_length.
     '''
-    features = []
-    for review in reviews_ints:
-        if len(review) < seq_length:
-            future = []
-            review_index = 0
-            for index in range(seq_length):
-                if index < (seq_length - len(review)):
-                    future.append(0)
-                else:
-                    future.append(review[review_index])
-                    review_index += 1
+    features = np.empty((len(reviews_ints), seq_length))
+    for idx, review in enumerate(reviews_ints):
+        # print(review)
+        if len(review) <= seq_length:
+            features[idx, :len(review)] = review
+            features[idx, len(review):seq_length] = 0.0
         else:
-            future = [review_int for index, review_int in enumerate(review) if index < seq_length]
-        features.append(future)  
-    
-    features= np.array(features)
+            features[idx, :] = review[:seq_length]
     
     return features
 
 
-def train_test_split(features, encoded_labels, split_frac=0.8, ordered_by_labels=False):
+def train_test_split(features, encoded_labels, numclasses=2, train_frac=0.8, balanced=False):
+    '''
+        train test split that deals with balanced data and, return three sets train, validate, test.
+    '''
 
-    split_frac_remain = 1 - split_frac
+    if numclasses < 2:
+        print('wrong value for numclasses must be above 2')
+        return
+    if balanced:
+        print('make sure the classes (labels) are sorted to have a balanced splits')
+    split_frac_remain = 1 - train_frac
     
     ## split data into training, validation, and test data (features and labels, x and y)
-    if not ordered_by_labels:
+    if not balanced:
         batches = features.shape[0]
-        train_size = int(batches*split_frac)
-        validate_size = int(train_size + batches*(split_frac_remain/2))
+        train_end = int(batches*train_frac)
+        validate_end = int(train_frac + batches*(split_frac_remain/2))
 
-        train_x = features[:train_size]
-        train_y = encoded_labels[:train_size]
+        train_x = features[:train_end]
+        train_y = encoded_labels[:train_end]
 
-        validate_x = features[train_size:validate_size]
-        validate_y = encoded_labels[train_size:validate_size]
+        validate_x = features[train_end:validate_end]
+        validate_y = encoded_labels[train_end:validate_end]
 
-        test_x = features[validate_size:]
-        test_y = encoded_labels[validate_size:]
+        test_x = features[validate_end:]
+        test_y = encoded_labels[validate_end:]
     else:
+        # calculate the size for the train, validate, test
         batches = features.shape[0]
-        train_size_half = int((batches*split_frac)/2)
-        validate_size_half = int(((train_size_half*2) + ((batches*split_frac_remain)/2))/2)
-        test_size_half = int(validate_size_half + (((batches*split_frac_remain)/2)/2)) 
+        train_size = int((batches*train_frac))
+        validate_size = int((batches*(split_frac_remain/2)))
+        test_size = int((batches*(split_frac_remain/2)))
 
-        #gettin the futures and labels for each dataset
-        train_x = np.concatenate( (features[:train_size_half], features[-train_size_half:]))
-        train_y = np.concatenate( (encoded_labels[:train_size_half], encoded_labels[-train_size_half:]))
+        train_class_size= int((train_size)/numclasses)
+        validate__class_size = int((validate_size)/numclasses)
+        test_class_size = int((test_size)/numclasses)
 
-        validate_x = np.concatenate( (features[train_size_half:validate_size_half], features[-validate_size_half:-train_size_half]))
-        validate_y = np.concatenate( (encoded_labels[train_size_half:validate_size_half], 
-                                      encoded_labels[-validate_size_half:-train_size_half]))                                               
-        test_x = np.concatenate( (features[validate_size_half:test_size_half], features[-test_size_half:-validate_size_half]))
-        test_y = np.concatenate( (encoded_labels[validate_size_half:test_size_half], encoded_labels[-test_size_half:-validate_size_half]))
+        # concat each part of the data to the split e.g. 2 classes after taking the first half from the start
+        # would take the second half from the start of half the batches
+        for class_ in range(0, numclasses):
+            # calculate class start to to use in getting the train end
+            class_start = int(batches/numclasses) * class_ 
+            # if first class initialize the arrays
+            if class_ == 0:
+                train_end = (class_start + train_class_size)
+                validate_end = train_end + (validate__class_size)
+                test_end = validate_end + (test_class_size)
+
+                train_x = np.array(features[:train_end])
+                train_y = np.array(encoded_labels[:train_end])
+
+                validate_x = np.array(features[train_end:validate_end])
+                validate_y = np.array(encoded_labels[train_end:validate_end])   
+
+                test_x = np.array(features[validate_end:test_end])
+                test_y = np.array(encoded_labels[validate_end:test_end])
+            else:
+                train_end = (class_start + train_class_size)
+                train_x = np.concatenate( (train_x, features[test_end:train_end]))
+                train_y = np.concatenate( (train_y, encoded_labels[test_end:train_end]))
+
+                validate_end = train_end + (validate__class_size)
+                validate_x = np.concatenate( (validate_x, features[train_end:validate_end]))
+                validate_y = np.concatenate( (validate_y, encoded_labels[train_end:validate_end]))   
+
+                test_end = validate_end + (test_class_size)
+                test_x = np.concatenate( (test_x, features[validate_end:test_end]))
+                test_y = np.concatenate( (test_y, encoded_labels[validate_end:test_end]))
 
     return train_x, validate_x, test_x, train_y, validate_y, test_y
 
