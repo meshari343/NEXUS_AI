@@ -2,7 +2,7 @@ from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 from nexus_ai.sentence_sentiment_analysis.english import english_model
 from nexus_ai.sentence_sentiment_analysis.arabic import arabic_model
-from nexus_ai.utilities import process_google_reviews, remove_emoji, clean_review
+from nexus_ai.utilities.util import process_google_reviews, remove_emoji, clean_review
 
 
 def pred(reviews, source='Google Maps', sources=None):

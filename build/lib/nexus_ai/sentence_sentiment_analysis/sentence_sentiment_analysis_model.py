@@ -1,17 +1,18 @@
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
-from nexus_ai.utilities.util import process_google_reviews, remove_emoji, clean_review
-from nexus_ai.ABSA.english import ABSA_english
-from nexus_ai.ABSA.arabic import ABSA_arabic
+from nexus_ai.sentence_sentiment_analysis.english import english_model
+from nexus_ai.sentence_sentiment_analysis.arabic import arabic_model
+from nexus_ai.utilities import process_google_reviews, remove_emoji, clean_review
 
 
 def pred(reviews, source='Google Maps', sources=None):
-    reviews = process_google_reviews(reviews, source=source, sources=sources, only_english=True)
+    reviews = process_google_reviews(reviews, source=source, sources=sources)
     deleted_idx = []
     en_idx = []
     ar_idx = []
     en_reviews = []
     ar_reviews = []
+
     # remove emojis
     reviews = [remove_emoji(review) if review != None else None for review in reviews]
     # clean english reviews
@@ -19,11 +20,8 @@ def pred(reviews, source='Google Maps', sources=None):
         if review != None:
             try:
                 if detect(review) == 'en':
-                    reviews[i] = clean_review(review, transform_punct=False, remove_punct=True)
-                # if the review is not english assign none to it for deleting later on
-                else:
-                    reviews[i] = None
-            # if the text is short LangDetect would raise an exception
+                    reviews[i] = clean_review(review)
+            # if the number of words in the text is shorter than 10 LangDetect would raise an exception
             # or if the text contain only numbers/symbols
             except LangDetectException:
                 # if the review contain only numbers/symbols assign none to it for deleting later on
@@ -56,11 +54,11 @@ def pred(reviews, source='Google Maps', sources=None):
         if review == None or review == '':
             deleted_idx.append(i)
 
-    en_pred = ABSA_english.pred(en_reviews)
+    en_pred = english_model.pred(en_reviews)
     # combine the predictions with the original indexes 
     en_pred = list(zip(en_idx, en_pred))
 
-    ar_pred = ABSA_arabic.pred(ar_reviews)
+    ar_pred = arabic_model.pred(ar_reviews)
     # combine the predictions with the original indexes 
     ar_pred = list(zip(ar_idx, ar_pred))
 
@@ -72,5 +70,12 @@ def pred(reviews, source='Google Maps', sources=None):
 
     # drop the indexes
     predictions = [tup[1] for tup in predictions]
-    
+
+
     return deleted_idx, predictions
+
+
+
+
+    
+            

@@ -7,9 +7,11 @@ nexus_ai/sentence_sentiment_analysis/arabic/__pycache__/*
 nexus_ai/sentence_sentiment_analysis/english/__pycache__/*
 nexus_ai/sentence_sentiment_analysis/__pycache__/*
 nexus_ai/time_series_forecasting/__pycache__/*
-nexus_ai/ABSA/ATEPC_checkpoints/*
-nexus_ai/ABSA/ATEPC_models/*
-!nexus_ai/ABSA/ATEPC_models/.gitkeep
+nexus_ai/ABSA/english/ATEPC_checkpoints/*
+nexus_ai/ABSA/english/ATEPC_models/*
+!nexus_ai/ABSA/english/ATEPC_models/.gitkeep
+nexus_ai/ABSA/arabic/models/*
+!nexus_ai/ABSA/arabic/models/.gitkeep
 nexus_ai/sentence_sentiment_analysis/arabic/word2vec
 !nexus_ai/sentence_sentiment_analysis/arabic/word2vec/.gitkeep
 nexus_ai/sentence_sentiment_analysis/arabic/models

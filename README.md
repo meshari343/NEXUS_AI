@@ -14,10 +14,13 @@ in this repository you would find the API to the ML models that support this pla
 ```bash
 git clone https://github.com/meshari343/NEXUS_AI
 ```
-**important:** after cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models).
+#### *(important) after cloning the repository:*
 
+Download the [english ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/english/ATEPC_models).
 
-You should also download and unpack [arabic sentence analysis model](https://drive.google.com/file/d/1nezfOeqGvbC-R9QniZxeRp2iy6YQP-pi/view?usp=sharing) to (nexus_ai/sentence_sentiment_analysis/arabic/models).
+You should also download the [arabic ABSA model](https://drive.google.com/file/d/1zFck4slRfc2RBgDP3K_Duv6vFX3W5KJD/view?usp=sharing) and unpack it to (nexus_ai/ABSA/arbic/models).
+
+You should also download the [arabic sentence analysis model](https://drive.google.com/file/d/1nezfOeqGvbC-R9QniZxeRp2iy6YQP-pi/view?usp=sharing) and unpack it to (nexus_ai/sentence_sentiment_analysis/arabic/models).
 #### create docker container
 ```bash
 CD NEXUS_AI
@@ -31,10 +34,13 @@ make sure you are using python 3.9 or create a virtual environment using virtual
 ```bash
 git clone https://github.com/meshari343/NEXUS_AI
 ```
-**important:** after cloning the repository, download the [ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/ATEPC_models).
+#### *(important) after cloning the repository:*
 
+Download the [english ABSA model](https://drive.google.com/file/d/1uSpLTYWCDUMujGy-NqDu-nPhpyzZGRwv/view?usp=sharing) and unpack it to (nexus_ai/ABSA/english/ATEPC_models).
 
-You should also download and unpack [arabic sentence analysis model](https://drive.google.com/file/d/1nezfOeqGvbC-R9QniZxeRp2iy6YQP-pi/view?usp=sharing) to (nexus_ai/sentence_sentiment_analysis/arabic/models).
+You should also download the [arabic ABSA model](https://drive.google.com/file/d/1zFck4slRfc2RBgDP3K_Duv6vFX3W5KJD/view?usp=sharing) and unpack it to (nexus_ai/ABSA/arbic/models).
+
+You should also download the [arabic sentence analysis model](https://drive.google.com/file/d/1nezfOeqGvbC-R9QniZxeRp2iy6YQP-pi/view?usp=sharing) and unpack it to (nexus_ai/sentence_sentiment_analysis/arabic/models).
 #### (Optional) Linux creating virtual environment 
 ```bash
 pip instal venv

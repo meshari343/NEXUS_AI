@@ -97,13 +97,13 @@ def pred(reviews, gpu=False, seq_length=20, batch_size=1000,
             for i in pred:
                 pred_list.append(i)
         else:
-            logging.warning('irregular output in sentence sentiment analysis')
+            logging.warning('irregular output in sentince sentiment analysis')
 
     pred_list = ['Positive' if prediction == 1 else('Negative' if prediction == 0 else None) for prediction in pred_list]
     # test logging 
     # pred_list.remove('positive')
     # pred_list.append(None)
     if None in pred_list:     
-        logging.warning('irregular output in english sentence sentiment analysis')
+        logging.warning('irregular output in english sentince sentiment analysis')
 
     return pred_list  

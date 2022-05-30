@@ -1,1 +1,10 @@
 nexus_ai.egg-info
+__pycache__/*
+nexus_ai/__pycache__/*
+nexus_ai/ABSA/arabic/__pycache__/*
+nexus_ai/ABSA/arabic/.ipynb_checkpoints/*
+nexus_ai/ABSA/__pycache__/*
+nexus_ai/sentence_sentiment_analysis/arabic/__pycache__/*
+nexus_ai/sentence_sentiment_analysis/english/__pycache__/*
+nexus_ai/sentence_sentiment_analysis/__pycache__/*
+nexus_ai/time_series_forecasting/__pycache__/
