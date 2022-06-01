@@ -1,3 +1,4 @@
+import pandas as pd
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 from nexus_ai.utilities.util import process_google_reviews, remove_emoji, clean_review
@@ -20,9 +21,9 @@ def pred(reviews, source='Google Maps', sources=None):
             try:
                 if detect(review) == 'en':
                     reviews[i] = clean_review(review, transform_punct=False, remove_punct=True)
-                # if the review is not english assign none to it for deleting later on
-                else:
-                    reviews[i] = None
+                # (only if english reviews only) if the review is not english assign none to it for deleting later on
+                # else:
+                #     reviews[i] = None
             # if the text is short LangDetect would raise an exception
             # or if the text contain only numbers/symbols
             except LangDetectException:
@@ -56,21 +57,34 @@ def pred(reviews, source='Google Maps', sources=None):
         if review == None or review == '':
             deleted_idx.append(i)
 
-    en_pred = ABSA_english.pred(en_reviews)
-    # combine the predictions with the original indexes 
-    en_pred = list(zip(en_idx, en_pred))
+    if  len(en_reviews) ==  0 and len(ar_reviews) ==  0:
+        return None
 
-    ar_pred = ABSA_arabic.pred(ar_reviews)
-    # combine the predictions with the original indexes 
-    ar_pred = list(zip(ar_idx, ar_pred))
+    if len(en_reviews) !=  0:
+        en_pred = ABSA_english.pred(en_reviews)
+        # combine the predictions with the original indexes 
+        en_pred = list(zip(en_idx, en_pred))
+    if len(ar_reviews) !=  0:
+        ar_pred = ABSA_arabic.pred(ar_reviews)
+        # combine the predictions with the original indexes 
+        ar_pred = list(zip(ar_idx, ar_pred))
 
     # combine predictions
-    predictions = en_pred.extend(ar_pred)
+    if len(en_reviews) !=  0 and len(ar_reviews) !=  0:
+        en_pred.extend(ar_pred)
+        predictions = en_pred
+    elif len(ar_reviews) ==  0:
+        predictions = en_pred
+    elif len(en_reviews) ==  0:
+        predictions = ar_pred
 
     # sort the reviews based on the original index 
-    predictions = sorted(en_pred, key= lambda tup: tup[0])
+    predictions = sorted(predictions, key= lambda tup: tup[0])
 
     # drop the indexes
     predictions = [tup[1] for tup in predictions]
-    
+    columns = ['aspect', 'sentiment', 'description']
+    predictions = pd.DataFrame(predictions, columns=columns)
+    predictions = predictions.to_dict(orient='list')
+
     return deleted_idx, predictions

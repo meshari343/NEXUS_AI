@@ -65,14 +65,15 @@ async def sentence_sentiment_analysis(data: sentiment__data_model):
 
     reviews = list(df['text'])
     sources = list(df['source'])
-
-    # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
-    deleted_idx, ABSA_predictions = ABSA_model.pred(reviews, sources=sources)
-    df.drop(deleted_idx, axis=0, inplace=True)
-
-    df['aspects'] = ABSA_predictions['aspect']
-    df['aspects_sentiment'] = ABSA_predictions['sentiment']
-    df['aspects_description'] = ABSA_predictions['description']
+    try:
+        # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
+        deleted_idx, ABSA_predictions = ABSA_model.pred(reviews, sources=sources)
+        df.drop(deleted_idx, axis=0, inplace=True)
+        df['aspects'] = ABSA_predictions['aspect']
+        df['aspects_sentiment'] = ABSA_predictions['sentiment']
+        df['aspects_description'] = ABSA_predictions['description']
+    except TypeError:
+        deleted_idx, ABSA_predictions = None, None
 
     json_str = df.to_json(orient='records')
     json_obj = json.loads(json_str)
@@ -87,13 +88,15 @@ async def ABSA(data: sentiment__data_model):
     reviews = list(df['text'])
     sources = list(df['source'])
 
-    # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
-    deleted_idx, predictions = ABSA_model.pred(reviews, sources=sources)
-    df.drop(deleted_idx, axis=0, inplace=True)
-
-    df['aspects'] = predictions['aspect']
-    df['sentiments'] = predictions['sentiment']
-    df['aspects_description'] = predictions['description']
+    try:
+        # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
+        deleted_idx, ABSA_predictions = ABSA_model.pred(reviews, sources=sources)
+        df.drop(deleted_idx, axis=0, inplace=True)
+        df['aspects'] = ABSA_predictions['aspect']
+        df['aspects_sentiment'] = ABSA_predictions['sentiment']
+        df['aspects_description'] = ABSA_predictions['description']
+    except TypeError:
+        deleted_idx, ABSA_predictions = None, None
 
     json_str = df.to_json(orient='records')
     json_obj = json.loads(json_str)

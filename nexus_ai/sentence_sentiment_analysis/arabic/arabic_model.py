@@ -28,7 +28,7 @@ MAX_LEN = 128
 # f = open(filename, 'rb')
 # bert_classifier = pickle.load(f)
 bert_classifier = BertClassifier()
-bert_classifier = bert_classifier.load_state_dict(torch.load('models/binary_bert_arabic_01_acc_90.50.pt', map_location='cpu'))
+bert_classifier.load_state_dict(torch.load('nexus_ai/sentence_sentiment_analysis/arabic/models/binary_bert_arabic_01_acc_90.50.pt', map_location='cpu'))
 if torch.cuda.is_available():  
     # Tell PyTorch to run the model on GPU
     bert_classifier.to(device)

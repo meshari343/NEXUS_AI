@@ -56,6 +56,6 @@ def pred(reviews):
 
     prediction.drop(['sentence','IOB', 'tokens', 'position'], axis=1, inplace=True)
 
-    prediction = prediction.to_dict(orient='list')
+    prediction = prediction.values.tolist()
     
     return prediction

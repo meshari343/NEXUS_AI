@@ -63,10 +63,10 @@ def pred(reviews, source='Google Maps', sources=None):
     ar_pred = list(zip(ar_idx, ar_pred))
 
     # combine predictions
-    predictions = en_pred.extend(ar_pred)
-
+    en_pred.extend(ar_pred)
+    predictions = en_pred
     # sort the reviews based on the original index 
-    predictions = sorted(en_pred, key= lambda tup: tup[0])
+    predictions = sorted(predictions, key= lambda tup: tup[0])
 
     # drop the indexes
     predictions = [tup[1] for tup in predictions]

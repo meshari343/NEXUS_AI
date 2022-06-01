@@ -11,15 +11,15 @@ from nexus_ai.ABSA.arabic.dataset import pred_dataset_ATE
 from nexus_ai.sentence_sentiment_analysis.preprocessing import pad_features
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-pretrain_model_name = "../../sentence_sentiment_analysis/arabic/models/bert_pretrained_01_acc_90.50"
+pretrain_model_name = "nexus_ai/sentence_sentiment_analysis/arabic/models/bert_pretrained_01_acc_90.50"
 tokenizer = BertTokenizer.from_pretrained("CAMeL-Lab/bert-base-arabic-camelbert-msa")
 
 model_APC = bert_APC(pretrain_model_name).to(DEVICE)
-model_APC.load_state_dict(torch.load('models/bert_APC.pt'))
+model_APC.load_state_dict(torch.load('nexus_ai/ABSA/arabic/models/bert_APC.pt'))
 model_APC.eval()
 
 model_ATE = bert_ATE(pretrain_model_name).to(DEVICE)
-model_ATE.load_state_dict(torch.load('models/bert_ATE.pt'))
+model_ATE.load_state_dict(torch.load('nexus_ai/ABSA/arabic/models/bert_ATE.pt'))
 model_ATE.eval() 
 
 def is_subtoken(word):
@@ -67,8 +67,8 @@ def detokinize(tokens, tags):
             if not is_subtoken(tokens[review_tokens_idx][token_idx]) and (token_idx+1)<len(tokens[review_tokens_idx]) and is_subtoken(tokens[review_tokens_idx][token_idx+1]):
                 review_restore_tokens.append(tokens[review_tokens_idx][token_idx] + tokens[review_tokens_idx][token_idx+1][2:])  
                 j = 2
-                while(len(tokens[review_tokens_idx]+[token_idx+j])<len(tokens) and is_subtoken(tokens[review_tokens_idx][token_idx+j])):
-                    restored_tokens[-1] = restored_tokens[-1] + tokens[review_tokens_idx][token_idx+j][2:]
+                while(token_idx+j<len(tokens[review_tokens_idx]) and len(tokens[review_tokens_idx]+[token_idx+j])<len(tokens) and is_subtoken(tokens[review_tokens_idx][token_idx+j])):
+                    review_restore_tokens[-1] = review_restore_tokens[-1] + tokens[review_tokens_idx][token_idx+j][2:]
                     j += 1
                 review_restore_tags.append(tags[review_tokens_idx][token_idx]) 
             elif not is_subtoken(tokens[review_tokens_idx][token_idx]):
@@ -126,7 +126,9 @@ def predict_model_ATE(pred_loader):
     return predictions.tolist()
 
 
-def arabic_ABSA(reviews):
+def pred(reviews):
+    if len(reviews)==0:
+        return []
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
     reviews = [text_preprocessing(review) for review in reviews] 
@@ -174,10 +176,11 @@ def arabic_ABSA(reviews):
                 pred= predict_model_APC(tokens[review_aspects_idx], aspect)
                 review_aspects_polarity.append(pred)
             aspects_polarity.append(review_aspects_polarity)    
-
+                
+    aspects_polarity = [['Negative' if polarity == 0 else('Neutral' if polarity == 1 else ('Positive' if polarity == 2 else None)) for polarity in aspects] for aspects in  aspects_polarity]
     # dummy empty aspcets descriptions
     aspects_description = [[] for i in range(len(aspects))]
+    results = [[ aspects[i], aspects_polarity[i], aspects_description[i] ] for i in  range(len(aspects))]
 
-    results_dict = {'aspects' : aspects, 'aspects_sentiment': aspects_polarity, 'aspects_description': aspects_description}
 
-    return results_dict
+    return results
