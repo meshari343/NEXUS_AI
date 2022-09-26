@@ -1,5 +1,7 @@
+venv/*
 __pycache__/*
 nexus_ai/__pycache__/*
+nexus_ai/ABSA/domain_adaptation_english/data/*
 nexus_ai/ABSA/arabic/__pycache__/*
 nexus_ai/ABSA/arabic/.ipynb_checkpoints/*
 nexus_ai/ABSA/__pycache__/*

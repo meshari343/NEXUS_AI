@@ -21,7 +21,7 @@ def pred(reviews, source='Google Maps', sources=None):
             try:
                 if detect(review) == 'en':
                     reviews[i] = clean_review(review, transform_punct=False, remove_punct=True)
-                # (only if english reviews only) if the review is not english assign none to it for deleting later on
+                #(only if all reviews are english) if the review is not english assign none to it for deleting later on
                 # else:
                 #     reviews[i] = None
             # if the text is short LangDetect would raise an exception
@@ -40,9 +40,9 @@ def pred(reviews, source='Google Maps', sources=None):
                     en_reviews.append(review) 
                     en_idx.append(i)
                 # take the arabic review and store it's original index for sorting later
-                elif detect(review) == 'ar':
-                    ar_reviews.append(review)
-                    ar_idx.append(i)
+                # elif detect(review) == 'ar':
+                #     ar_reviews.append(review)
+                #     ar_idx.append(i)
                 # if the review is neither english or arabic assign none to it for deleting later on
                 else: 
                     reviews[i] = None
@@ -64,27 +64,36 @@ def pred(reviews, source='Google Maps', sources=None):
         en_pred = ABSA_english.pred(en_reviews)
         # combine the predictions with the original indexes 
         en_pred = list(zip(en_idx, en_pred))
-    if len(ar_reviews) !=  0:
-        ar_pred = ABSA_arabic.pred(ar_reviews)
+    # if len(ar_reviews) !=  0:
+        ## ar_pred = [[None, None, None] for x in ar_reviews]
+        # ar_pred = ABSA_arabic.pred(ar_reviews)
         # combine the predictions with the original indexes 
-        ar_pred = list(zip(ar_idx, ar_pred))
+        # ar_pred = list(zip(ar_idx, ar_pred))
 
     # combine predictions
-    if len(en_reviews) !=  0 and len(ar_reviews) !=  0:
-        en_pred.extend(ar_pred)
-        predictions = en_pred
-    elif len(ar_reviews) ==  0:
-        predictions = en_pred
-    elif len(en_reviews) ==  0:
-        predictions = ar_pred
+    # if len(en_reviews) !=  0 and len(ar_reviews) !=  0:
+    #     en_pred.extend(ar_pred)
+    #     predictions = en_pred
+    # elif len(ar_reviews) ==  0:
+    #     predictions = en_pred
+    # elif len(en_reviews) ==  0:
+    #     predictions = ar_pred
 
+    predictions = en_pred
     # sort the reviews based on the original index 
     predictions = sorted(predictions, key= lambda tup: tup[0])
 
     # drop the indexes
     predictions = [tup[1] for tup in predictions]
-    columns = ['aspect', 'sentiment', 'description']
-    predictions = pd.DataFrame(predictions, columns=columns)
+    # col_names = ['aspect', 'sentiment', 'description']
+    # predictions = pd.DataFrame(predictions, columns=col_names)
+    predictions = pd.DataFrame(
+        {
+            'aspect': predictions[0],
+            'sentiment': predictions[1],
+            'description': predictions[2]
+        }
+    )
     predictions = predictions.to_dict(orient='list')
 
     return deleted_idx, predictions

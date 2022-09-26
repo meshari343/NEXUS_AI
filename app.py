@@ -69,6 +69,7 @@ async def sentence_sentiment_analysis(data: sentiment__data_model):
         # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
         deleted_idx, ABSA_predictions = ABSA_model.pred(reviews, sources=sources)
         df.drop(deleted_idx, axis=0, inplace=True)
+        df.reset_index(drop=True, inplace=True)
         df['aspects'] = ABSA_predictions['aspect']
         df['aspects_sentiment'] = ABSA_predictions['sentiment']
         df['aspects_description'] = ABSA_predictions['description']
@@ -92,6 +93,7 @@ async def ABSA(data: sentiment__data_model):
         # deleted_idx: zero-length reviews/non-English reviews are gonna be deleted and the deleted indexes are returned 
         deleted_idx, ABSA_predictions = ABSA_model.pred(reviews, sources=sources)
         df.drop(deleted_idx, axis=0, inplace=True)
+        df.reset_index(drop=True, inplace=True)
         df['aspects'] = ABSA_predictions['aspect']
         df['aspects_sentiment'] = ABSA_predictions['sentiment']
         df['aspects_description'] = ABSA_predictions['description']
